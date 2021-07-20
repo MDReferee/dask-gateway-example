@@ -1,0 +1,75 @@
+[aws]
+aws_region_name = us-east-1
+
+[aliases]
+ssh = ssh {CFN_USER}@{MASTER_IP} {ARGS}
+
+[global]
+cluster_template = default
+update_check = true
+sanity_check = true
+
+[cluster default]
+key_name = HPCtestcluster-02082021
+scheduler = slurm
+master_instance_type = c5.xlarge
+base_os = ubuntu1804
+vpc_settings = default
+queue_settings = hpc-demand, hpc-spot
+ebs_settings = custom1, custom2
+fsx_settings = myfsx
+s3_read_write_resource = arn:aws:s3:::<<bucketname>>/*
+s3_read_resource = arn:aws:s3:::*
+post_install = s3://<<bucketname>>/post_install_pri_04282021.sh
+additional_iam_policies = arn:aws:iam::<<acct_num>>:policy/s3fs-bucket-role-policy
+#ec2_iam_role = s3fs-instance-role
+
+[vpc default]
+vpc_id = vpc-016b87b5098f15bbe
+master_subnet_id = subnet-0c3dd0a8c530d7329
+compute_subnet_id = subnet-0cdb88426111d411c
+additional_sg = sg-0013e949cdf5f8197
+#use_public_ips = false
+
+[queue hpc-demand]
+enable_efa = true
+enable_efa_gdr = false
+compute_resource_settings = c5n-18xlarge-demand
+disable_hyperthreading = true
+compute_type = ondemand
+placement_group = DYNAMIC
+
+[compute_resource c5n-18xlarge-demand]
+instance_type = c5n.18xlarge
+min_count = 0
+max_count = 30
+
+[queue hpc-spot]
+enable_efa = true
+enable_efa_gdr = false
+compute_resource_settings = c5n-18xlarge-spot
+disable_hyperthreading = true
+compute_type = spot
+placement_group = DYNAMIC
+
+[compute_resource c5n-18xlarge-spot]
+instance_type = c5n.18xlarge
+min_count = 0
+max_count = 30
+
+[fsx myfsx]
+shared_dir = /lustre
+fsx_fs_id = fs-04717e86f6298a8f8
+
+[ebs custom1]
+shared_dir = /benchmarks
+volume_type = st1
+ebs_snapshot_id = snap-0bba46df83369515b
+#volume_size = 500
+
+[ebs custom2]
+shared_dir = /shared
+volume_type = gp2
+ebs_snapshot_id = snap-0a0d649251f450968
+#volume_size = 40
+
